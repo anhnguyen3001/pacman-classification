@@ -87,5 +87,5 @@ class PerceptronClassifier:
 
         "*** YOUR CODE HERE ***"
         featuresWeights  = self.weights[label].sortedKeys()[0 : 100]
-        print(len(featuresWeights))
+        
         return featuresWeights
