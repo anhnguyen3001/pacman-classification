@@ -64,6 +64,31 @@ def basicFeatureExtractorFace(datum):
                 features[(x,y)] = 0
     return features
 
+def determineWhiteRegion(position, features, visited):
+    visited.add(position)
+    x, y = position
+    nextPosistions = []
+
+    if (x != 0):
+        nextPosistions.append((x - 1, y))
+
+    if (x < DIGIT_DATUM_WIDTH - 1):
+        nextPosistions.append((x + 1, y))
+
+    if (y != 0):
+        nextPosistions.append((x, y - 1))
+
+    if (y < DIGIT_DATUM_HEIGHT - 1):
+        nextPosistions.append((x, y + 1))
+
+    for nextPosition in nextPosistions:
+        x, y = nextPosition
+        if nextPosition not in visited and features[(x, y)] == 0:
+            visited.add(nextPosition)
+            visited = determineWhiteRegion(nextPosition, features, visited)
+    
+    return visited;
+
 def enhancedFeatureExtractorDigit(datum):
     """
     Your feature extraction playground.
@@ -78,7 +103,21 @@ def enhancedFeatureExtractorDigit(datum):
     features =  basicFeatureExtractorDigit(datum)
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    regions = 0
+    visited = set()
+    
+    for x in range(DIGIT_DATUM_WIDTH):
+        for y in range(DIGIT_DATUM_HEIGHT):
+            position = (x, y)
+            if features[position] == 0 and position not in visited:
+                visited.add(position)
+                visited = determineWhiteRegion(position, features, visited)
+                regions += 1
+    
+    features[1] = 0
+    features[2] = 0
+    features[3] = 0
+    features[regions] = 1
 
     return features
 
@@ -124,9 +163,41 @@ def enhancedPacmanFeatures(state, action):
     """
     features = util.Counter()
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    return features
+    successor = state.generateSuccessor(0, action)
+    position = successor.getPacmanPosition()
 
+    ghostList = successor.getGhostPositions()
+    closetGhost = min([util.manhattanDistance(ghost, position) for ghost in ghostList])
+    
+    if closetGhost:
+        closetGhost = 8.0 * closetGhost
+    features['closetGhost'] = closetGhost
+
+    features['remainingFood'] = successor.getNumFood()
+
+    closetFood = 0
+    foodList = successor.getFood().asList()
+
+    if foodList:
+        closetFood = min([util.manhattanDistance(food, position) for food in foodList])
+        
+        if closetFood:
+            closetFood = 7.0 / closetFood
+
+    features['closetFood'] = closetFood  
+
+    capsuleList = successor.getCapsules()
+    closetCapsule = 0
+
+    if capsuleList:
+        closetCapsule = min([util.manhattanDistance(capsule, position) for capsule in capsuleList])
+
+        if closetCapsule:
+            closetCapsule = 9.0/closetCapsule
+
+    features['closetCapsule'] = closetCapsule
+
+    return features
 
 def contestFeatureExtractorDigit(datum):
     """

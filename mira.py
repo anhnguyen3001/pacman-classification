@@ -52,7 +52,7 @@ class MiraClassifier:
 
     def trainAndTune(self, trainingData, trainingLabels, validationData, validationLabels, Cgrid):
         """
-        This method sets self.weights using MIRA.  Train the classifier for each value of C in Cgrid,
+        This method sets self.weights using MIRA. Train the classifier for each value of C in Cgrid,
         then store the weights that give the best accuracy on the validationData.
 
         Use the provided self.weights[label] data structure so that
@@ -61,7 +61,45 @@ class MiraClassifier:
         representing a vector of values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        gridWeight = util.Counter()
+        total = util.Counter()
+
+        for C in Cgrid:
+            for iteration in range(self.max_iterations):
+                print "Starting iteration ", iteration, "..."
+                
+                for i in range(len(trainingData)):
+                    "*** YOUR CODE HERE ***"
+                    tData = trainingData[i]
+                    labelMax = self.classify([tData])[0]
+                    tLabel = trainingLabels[i]
+
+                    if labelMax != tLabel:
+                        multiple = util.Counter()
+                        
+                        numerator = (self.weights[labelMax].__sub__(self.weights[tLabel])).__mul__(tData) + 1.0
+                        denominator = 2*(tData.__mul__(tData))
+                        t = min(C, numerator/denominator)
+                        
+                        for k in trainingData[i].keys():
+                            multiple[k] = t * trainingData[i][k]
+                        
+                        self.weights[tLabel].__radd__(multiple)
+                        self.weights[labelMax].__sub__(multiple)
+                    
+            gridWeight[C] = self.weights
+            totalAccuracy = 0
+            label = util.Counter()
+            
+            for i in range(len(validationData)):
+                for j in validationLabels:
+                    label[j] = validationData[i].__mul__(self.weights[j])
+
+                if label.argMax() == validationLabels[i]:
+                    totalAccuracy += 1
+            total[C] = totalAccuracy
+            
+        self.weights = gridWeight[total.argMax()]
 
     def classify(self, data ):
         """

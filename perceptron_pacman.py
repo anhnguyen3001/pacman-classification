@@ -45,9 +45,14 @@ class PerceptronClassifierPacman(PerceptronClassifier):
         self.features = trainingData[0][0]['Stop'].keys() # could be useful later
         # DO NOT ZERO OUT YOUR WEIGHTS BEFORE STARTING TRAINING, OR
         # THE AUTOGRADER WILL LIKELY DEDUCT POINTS.
-
         for iteration in range(self.max_iterations):
             print "Starting iteration ", iteration, "..."
             for i in range(len(trainingData)):
                 "*** YOUR CODE HERE ***"
-                util.raiseNotDefined()
+                tData = trainingData[i]
+                labelMax = self.classify([tData])[0]
+                tLabel = trainingLabels[i]
+                
+                if labelMax != tLabel:
+                    self.weights += tData[0][tLabel]
+                    self.weights -= tData[0][labelMax]
